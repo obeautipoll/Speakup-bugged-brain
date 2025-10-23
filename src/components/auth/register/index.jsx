@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../../contexts/authContext";
 import { doCreateUserWithEmailAndPassword } from "../../../firebase/auth";
 import "../../../styles/students.css";
@@ -140,13 +140,13 @@ const Register = () => {
 
           <div className="login-footer">
             <p>
-               Already have an account?{" "}
-              <span
-                onClick={() => navigate("/login")}
-                style={{ color: "var(--maroon)", fontWeight: 600, cursor: "pointer" }}
-              >
-                Login Here
-              </span>
+              <Link
+            className="text-sm text-blue-600 underline"
+            to="/login"
+            style={{ color: "var(--maroon)", fontWeight: 600 }}
+          >
+            Login Here
+          </Link>
             </p>
           </div>
         </form>

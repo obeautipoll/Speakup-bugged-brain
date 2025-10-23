@@ -1,7 +1,7 @@
 //loginworking
 
 import React, { useState , useEffect} from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate , Link} from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContext';
 import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../firebase/auth';
 import "../../../styles/students.css";
@@ -155,12 +155,13 @@ const getUserDataFromFirestore = async (uid) => {
           <div className="login-footer">
             <p>
               Don't have an account?{" "}
-              <span
-                onClick={() => navigate("/register")}
-                style={{ color: "var(--maroon)", fontWeight: 600, cursor: "pointer" }}
-              >
-                Register Here
-              </span>
+              <Link
+              className="text-sm text-blue-600 underline"
+              to="/register"
+              style={{ color: "var(--maroon)", fontWeight: 600 }}
+            >
+              Register Here
+            </Link>
             </p>
           </div>
         </form>
