@@ -44,7 +44,7 @@
   transition: all 0.3s ease;
   font-family: 'Poppins', sans-serif;
   position: relative;
-  overflow: hidden;
+              overflow: visible;
 }
 
 .tab::before {
@@ -100,7 +100,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   cursor: pointer;
-  overflow: hidden;
+              overflow: visible;
 }
 
 .notification-item::before {

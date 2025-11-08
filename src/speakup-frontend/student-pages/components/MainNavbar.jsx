@@ -101,7 +101,7 @@ const MainNavbar = () => {
                 <div className="user-info">
                     <div className="user-details">
                         <span className="name">{userName}</span>
-                        <span className="role">{userRole || "Unknown Role"}</span> {/* Display role (e.g., 'Student', 'Admin') */}
+                        <span className="role">{userRole || ""}</span>
                     </div>
                     {/* CSS-styled initials badge */}
                     <div className="user-avatar-badge">

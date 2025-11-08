@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import '../../styles-admin/approved-table.css';
+import '../../../styles-admin/approved-table.css';
 
 // --- CONSTANTS ---
 const ADMIN_ROLES = {

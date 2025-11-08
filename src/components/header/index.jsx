@@ -1,14 +1,11 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/authContext'
-import { doSignOut } from '../../firebase/auth'
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/authContext';
 
 const Header = () => {
-    const navigate = useNavigate()
-    const { userLoggedIn } = useAuth()
-    return (
-        {}
-    )
-}
+  const navigate = useNavigate();
+  const { userLoggedIn } = useAuth();
 
-export default Header
+  return null; // Component is empty, returns nothing
+};
+
+export default Header;

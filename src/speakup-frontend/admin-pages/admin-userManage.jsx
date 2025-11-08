@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import "../styles-admin/userManage.css";
+import "../../styles-admin/userManage.css";
 import SideBar from "./components/SideBar";
 import AdminNavbar from "./components/NavBar";
 import ApprovedAccountsTable from "./components/ApprovedTable";

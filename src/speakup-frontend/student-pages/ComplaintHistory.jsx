@@ -5,31 +5,41 @@ import { useNavigate } from "react-router-dom";
 import SideBar from "../student-pages/components/SideBar";
 import MainNavbar from "./components/MainNavbar";
 
-
+import { useEffect } from "react";
+import { db, auth } from "../../firebase/firebase";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 const ComplaintHistory = () => {
   const navigate = useNavigate();
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   
 
-  const complaints = [
-    {
-      id: 1,
-      description:
-        "The air conditioning unit in Room 11 has not been functioning properly for two weeks.",
-      category: "Facilities",
-      dateFiled: "10.05.2025",
-      status: "Resolved",
-      dateResolved: "10.12.2025",
-      file: "complaint_evidence.pdf",
-    },
-    {
-      id: 2,
-      description: "Course requirements overlap heavily across subjects.",
-      category: "Academic",
-      dateFiled: "10.14.2025",
-      status: "Pending",
-    },
-  ];
+  const [complaints, setComplaints] = useState([]);
+
+useEffect(() => {
+  const fetchComplaints = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const q = query(
+        collection(db, "complaints"),
+        where("userId", "==", user.uid)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const complaintList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setComplaints(complaintList);
+    } catch (error) {
+      console.error("❌ Error fetching complaint history:", error);
+    }
+  };
+
+  fetchComplaints();
+}, []);
 
   
 
@@ -56,28 +66,44 @@ const ComplaintHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {complaints.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.description}</td>
-                  <td>{c.category}</td>
-                  <td>{c.dateFiled}</td>
-                  <td>
-                    <span className={`status ${c.status.toLowerCase()}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn"
-                      style={{ padding: "5px 10px", fontSize: 12 }}
-                      onClick={() => setSelectedComplaint(c)}
-                    >
-                      <i className="fas fa-eye"></i> View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                {complaints.map((c) => (
+                  <tr key={c.id}>
+                    {/* Complaint Description */}
+                    <td>
+                      {c.concernDescription ||
+                        c.otherDescription ||
+                        c.incidentDescription ||
+                        c.facilityDescription ||
+                        c.concernFeedback ||
+                        "No description provided"}
+                    </td>
+
+                    {/* Category */}
+                    <td>{c.category || "—"}</td>
+
+                    {/* Date Filed */}
+                    <td>{c.submissionDate?.toDate().toLocaleDateString() || "—"}</td>
+
+                    {/* Status */}
+                    <td>
+                      <span className={`status ${c.status?.toLowerCase() || "pending"}`}>
+                        {c.status || "Pending"}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td>
+                      <button
+                        className="btn"
+                        style={{ padding: "5px 10px", fontSize: 12 }}
+                        onClick={() => setSelectedComplaint(c)}
+                      >
+                        <i className="fas fa-eye"></i> View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
           </table>
         </div>
 

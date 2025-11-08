@@ -1,93 +1,86 @@
 import React from 'react';
-// Assuming you are using react-router-dom v6+ for navigation
 import { useNavigate } from 'react-router-dom';
-import "../../../styles-admin/sidebar-admin.css" // Optional: for component-specific styling
+import "../../../styles-admin/sidebar-admin.css";
 
 const SideBar = () => {
-  // Get the navigation function
   const navigate = useNavigate();
 
-  // Define the navigation logic
   const handleNavigation = (page) => {
     switch (page) {
       case "logout":
-        // TODO: clear session or token (e.g., localStorage.removeItem('token'))
-        navigate("/admin/login");
+        // TODO: clear session or token if needed
+        navigate("/login");
         break;
-      case "admin-dashboard":
-        navigate("/admin/dashboard");
+      case "dashboard":
+        navigate("/adashboard");
         break;
-      case "admin-monitoring":
-        navigate("/admin/monitor-complaints");
+      case "monitor":
+        navigate("/amonitorcomplaints");
         break;
-      case "admin-userManage":
-        navigate("/admin/userManage");
+      case "users":
+        navigate("/amanageusers");
         break;
-      case "admin-analytics":
-        navigate("/admin/analytics");
+      case "analytics":
+        navigate("/aanalytics");
         break;
-      case "admin-settings":
-        navigate("/admin/settings");
+      case "notifications":
+        navigate("/anotifications");
         break;
-      case "admin-notifications":
-        navigate("/admin/notifications");
+      case "settings":
+        navigate("/asettings");
         break;
       default:
-        // Handle unexpected page value if necessary
         console.error("Unknown navigation page:", page);
     }
   };
 
   return (
-    <nav className="sidebar-container"> {/* Use a semantic element for the navbar */}
-      <div className="sidebar-content-wrapper"> {/* Optional wrapper */}
-        {/* You can add a logo or title here */}
-        {/* <div className="navbar-logo">MyApp</div> */}
+    <nav className="sidebar-container">
+      <div className="sidebar-content-wrapper">
         <div className="logo">
-          <h1> SpeakUp </h1>
-          <p> MSU-IIT Complaint System Admin Side</p>
+          <h1>SpeakUp</h1>
+          <p>MSU-IIT Complaint System Admin</p>
         </div>
         
         <ul className="sidebar-links">
           <li 
-            className={window.location.pathname === "/admin/dashboard" ? "active" : ""}
-            onClick={() => handleNavigation("admin-dashboard")}
+            className={window.location.pathname === "/adashboard" ? "active" : ""}
+            onClick={() => handleNavigation("dashboard")}
           >
             <i className="fa-solid fa-gauge"></i> Dashboard
           </li>
 
           <li 
-            className={window.location.pathname === "/admin/monitor-complaints" ? "active" : ""}
-            onClick={() => handleNavigation("admin-monitoring")}
+            className={window.location.pathname === "/amonitorcomplaints" ? "active" : ""}
+            onClick={() => handleNavigation("monitor")}
           >
             <i className="fa-solid fa-file-lines"></i> Monitor Complaints
           </li>
 
           <li 
-            className={window.location.pathname === "/admin/userManage" ? "active" : ""}
-            onClick={() => handleNavigation("admin-userManage")}
+            className={window.location.pathname === "/amanageusers" ? "active" : ""}
+            onClick={() => handleNavigation("users")}
           >
             <i className="fa-solid fa-users"></i> User Management
           </li>
 
           <li 
-            className={window.location.pathname === "/admin/analytics" ? "active" : ""}
-            onClick={() => handleNavigation("admin-analytics")}
+            className={window.location.pathname === "/aanalytics" ? "active" : ""}
+            onClick={() => handleNavigation("analytics")}
           >
             <i className="fa-solid fa-chart-bar"></i> Reports & Analytics
           </li>
 
           <li 
-            className={window.location.pathname === "/admin/notifications" ? "active" : ""}
-            onClick={() => handleNavigation("admin-notifications")}
+            className={window.location.pathname === "/anotifications" ? "active" : ""}
+            onClick={() => handleNavigation("notifications")}
           >
             <i className="fa-solid fa-bell"></i> Notifications
           </li>
 
-
           <li 
-            className={window.location.pathname === "/admin/setting" ? "active" : ""}
-            onClick={() => handleNavigation("admin-setting")}
+            className={window.location.pathname === "/asettings" ? "active" : ""}
+            onClick={() => handleNavigation("settings")}
           >
             <i className="fa-solid fa-gear"></i> Settings
           </li>
@@ -103,7 +96,6 @@ const SideBar = () => {
           >
             <i className="fa-solid fa-right-from-bracket"></i> Logout
           </li>
-
         </ul>
       </div>
     </nav>

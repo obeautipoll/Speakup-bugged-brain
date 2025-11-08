@@ -14,7 +14,7 @@
   max-width: 1200px;
   margin: 1rem;
   font-family: 'Poppins', sans-serif;
-  overflow: hidden;
+              overflow: visible;
 }
 
 .urgent-complaints-widget::before {
@@ -96,7 +96,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+              overflow: visible;
 }
 
 .complaint-card::before {

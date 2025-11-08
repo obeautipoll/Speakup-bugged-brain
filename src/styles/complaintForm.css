@@ -237,10 +237,11 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: 2rem;
+  overflow-y: auto;
   animation: fadeIn 0.3s ease;
 }
 
@@ -436,6 +437,7 @@
   }
 
   .modal-body {
+    overflow-y: auto;
     padding: 1.25rem;
   }
 
@@ -517,21 +519,25 @@
 
 /* Scrollbar Styling */
 .modal-body::-webkit-scrollbar {
+  overflow-y: auto;
   width: 8px;
 }
 
 .modal-body::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
+  overflow-y: auto;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
   background: var(--maroon-light);
+  overflow-y: auto;
   border-radius: 4px;
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
   background: var(--maroon-primary);
+  overflow-y: auto;
 }
 
 /* Select Dropdown Styling */
@@ -568,4 +574,28 @@ input::placeholder,
 textarea::placeholder {
   color: #999;
   font-size: 0.813rem;
+}
+
+/* Fix layout scroll lock */
+#complaintPage {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  overflow-y: auto; /* allow vertical scrolling */
+}
+
+/* If using a flex container in parent (like .main-content), ensure it grows and scrolls */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  
+  box-sizing: border-box;
+}
+
+#complaintPage {
+  overflow-y: visible; /* allow the document to scroll normally */
+}
+
+.main-content {
+  overflow-y: visible;
 }

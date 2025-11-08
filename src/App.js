@@ -1,6 +1,14 @@
 import { useRoutes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/authContext";
 
+
+
+
+// Styles
+import "./styles/students.css";
+import "./styles-admin/admin.css";
+
+
 // Auth components
 import Login from "./components/auth/login";
 import Register from "./components/auth/register";
@@ -14,6 +22,12 @@ import FileComplaint from "./speakup-frontend/student-pages/ComplaintForm";
 import Notifications from "./speakup-frontend/student-pages/Notifications";
 import ComplaintHistory from "./speakup-frontend/student-pages/ComplaintHistory";
 import Dashboard from "./speakup-frontend/student-pages/Dashboard";
+
+
+// Admin Pages
+import UserManagementView from "./speakup-frontend/admin-pages/admin-userManage";
+import AdminMonitorComplaints from "./speakup-frontend/admin-pages/admin-monitoring";
+import Analytics from "./speakup-frontend/admin-pages/admin-analytics";
 
 // PrivateRoute component to handle role-based route protection
 const PrivateRoute = ({ element, requiredRole }) => {
@@ -75,18 +89,45 @@ function App() {
         />
       ),
     },
-    {
-      path: "/adashboard",
-      element: (
-        <PrivateRoute
-          element={<AdminDashboard />}
-          requiredRole="admin" // Protect the route, only accessible by admins
-        />
-      ),
-    },
+   {
+  path: "/adashboard",
+  element: (
+    <PrivateRoute 
+      element={<AdminDashboard />}
+      requiredRole="admin" // Protect the route, only accessible by admins
+    />
+  ),
+  },
+  {
+    path: "/amanageusers",
+    element: (
+      <PrivateRoute
+        element={<UserManagementView />}
+        requiredRole="admin" // Protect the route, only accessible by admins
+      />
+    ),
+  },
+  {
+    path: "/aanalytics",
+    element: (
+      <PrivateRoute
+        element={<Analytics />}
+        requiredRole="admin" // Protect the route, only accessible by admins
+      />
+    ),
+  },
+  {
+    path: "/amonitorcomplaints",
+    element: (
+      <PrivateRoute
+        element={<AdminMonitorComplaints />}
+        requiredRole="admin" // Protect the route, only accessible by admins
+      />
+    ),
+  },
     {
       path: "*", // Catch-all route for undefined paths
-      element: <Navigate to="/login" replace />, // Redirect to login page
+      element: <Navigate to="/dashboard" replace />, // Redirect to login page
     },
   ];
 

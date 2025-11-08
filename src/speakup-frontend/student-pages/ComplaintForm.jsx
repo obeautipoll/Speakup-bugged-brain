@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 import SideBar from "../student-pages/components/SideBar";
 import MainNavbar from "./components/MainNavbar";
 
+import { submitComplaint } from "../../services/complaintServices";
+
+
+
 const FileComplaint = () => {
   const navigate = useNavigate();
   const [category, setCategory] = useState("");
@@ -20,29 +24,28 @@ const FileComplaint = () => {
   };
 
   const handleConfirm = async () => {
-    try {
-      // Replace with your actual API endpoint
-      // const response = await fetch('/api/complaints', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(complaintData)
-      // });
-      
-      console.log("Complaint submitted:", complaintData);
-      setShowModal(false);
-      alert("Your complaint has been submitted successfully!");
-      
-      // Reset form
-      setCategory("");
-      document.getElementById("complaintForm").reset();
-      
-      // Optional: navigate to another page
-      // navigate("/complaints-history");
-    } catch (error) {
-      console.error("Error submitting complaint:", error);
-      alert("An error occurred. Please try again.");
-    }
-  };
+  try {
+    // Check if there's an uploaded file (if any)
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = fileInput?.files?.[0] || null;
+
+    await submitComplaint(
+      { ...complaintData, category }, // all form data
+      file // optional file
+    );
+
+    setShowModal(false);
+    alert(" Your complaint has been submitted successfully!");
+
+    // Reset form and category
+    setCategory("");
+    document.getElementById("complaintForm").reset();
+
+  } catch (error) {
+    console.error("Error submitting complaint:", error);
+    alert("❌ An error occurred. Please try again.");
+  }
+};
 
   const handleCancel = () => {
     setShowModal(false);
