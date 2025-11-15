@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import '../../styles-admin/admin.css';
-import SideBar from './components/SideBar';
-import AdminNavbar from './components/NavBar';
+import '../../styles/styles-admin/admin.css';
+import AdminSideBar from './components/AdminSideBar';
+import AdminNavbar from './components/AdminNavBar';
 import { db } from '../../firebase/firebase';
 
 const STATUS_CONFIG = {
@@ -311,7 +311,7 @@ const AdminAnalytics = () => {
 
   return (
     <div className="admin-container">
-      <SideBar />
+      <AdminSideBar />
       <main className="main-content">
         <AdminNavbar />
 

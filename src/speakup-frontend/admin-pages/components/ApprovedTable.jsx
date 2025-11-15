@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../../styles-admin/approved-table.css';
+import '../../../styles/styles-admin/approved-table.css';
 
 const formatDate = (value) => {
   if (!value) return 'Not set';
@@ -45,7 +45,7 @@ const ApprovedAccountsTable = ({
 
     return (
       <p className="approved-description">
-        Total registered accounts: <span className="account-count">{accounts.length}</span>
+        Total registered student accounts: <span className="account-count">{accounts.length}</span>
       </p>
     );
   };

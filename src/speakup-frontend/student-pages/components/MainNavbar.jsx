@@ -1,28 +1,44 @@
 import React from 'react'; 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../contexts/authContext';  // Import useAuth to get real user data
+import { useAuth } from '../../../contexts/authContext';
 import "@fortawesome/fontawesome-free/css/all.min.css"; 
-import "../../../styles/navbar.css"
+import "../../../styles/styles-student/navbar-student.css"
 
 const MainNavbar = () => {
-    // Hooks for navigation and location tracking
     const location = useLocation();
     const navigate = useNavigate();
+    const { currentUser, userRole } = useAuth();
 
-    // Get real user data from AuthContext
-    const { currentUser, userRole } = useAuth();  // Access currentUser and userRole from AuthContext
+    // Extract first name for greeting message
+    const firstName = currentUser?.displayName?.split(" ")[0] || 
+                      currentUser?.email?.split("@")[0] || 
+                      "User";
 
-    // Extract the part before '@' from email, or default to "Guest" if user is not logged in
+    // Extract full name or default to email prefix
     const userName = currentUser ? currentUser.displayName || currentUser.email.split('@')[0] : "Guest";
     
-    // Extract initials as the part before '@' from email or fallback to "GU" for guest
-    const userInitials = userName.split(' ')[0].toUpperCase(); // Use first name if available, otherwise just use the first part before '@'
+    const getUserInitials = () => {
+        if (!currentUser) return "GU";
+        
+        if (currentUser.displayName) {
+            const nameParts = currentUser.displayName.trim().split(" ");
+            
+            if (nameParts.length === 1) {
+                return nameParts[0].charAt(0).toUpperCase();
+            }
+            
+            const firstInitial = nameParts[0].charAt(0).toUpperCase();
+            const lastInitial = nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+            
+            return firstInitial + lastInitial;
+        }
+        
+        const emailPrefix = currentUser.email.split('@')[0];
+        return emailPrefix.substring(0, 2).toUpperCase();
+    };
     
-    const unreadNotifications = 3;  // Mock count, replace with real data if available
+    const unreadNotifications = 3;
 
-    // --- Helper Functions ---
-
-    // Determine the greeting based on time of day (Mock for display)
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return "Good Morning";
@@ -30,7 +46,6 @@ const MainNavbar = () => {
         return "Good Evening";
     };
 
-    // Determine the page title based on the current URL path
     const getPageTitle = (path) => {
         const normalizedPath = path.toLowerCase().replace(/^\/|\/$/g, '');
         
@@ -45,7 +60,7 @@ const MainNavbar = () => {
                 return "Notifications";
             case "student/login":
             case "login":
-                return "Login"; // Should typically not see the navbar here, but included for completeness
+                return "Login";
             default:
                 if (normalizedPath.startsWith('history/')) {
                     return "Complaint Details"; 
@@ -54,30 +69,21 @@ const MainNavbar = () => {
         }
     };
 
-    // Handler for the primary button click
-    const handleFileComplaint = () => {
-        navigate("/file-complaint"); 
-    };
+    const handleFileComplaint = () => navigate("/file-complaint"); 
+    const handleNotifications = () => navigate("/notifications"); 
 
-    // Handler for the notification bell
-    const handleNotifications = () => {
-        navigate("/notifications"); 
-    };
-
-    // --- Render ---
     return (
-        <div className="main-navbar">
-            
-            {/* 1. PAGE TITLE GROUP (Greeting and Dynamic Title) */}
+        <div className="student-main-navbar">
             <div className="page-title-group">
-                <p className="welcome-greeting">{getGreeting()}, {userName}!</p> 
+
+                {/* MAIN GREETING */}
+                <p className="welcome-greeting">
+                    {getGreeting()}, {firstName}. <span className="welcome-subtext-inline">It’s great to see you back on SpeakUp.</span>
+                </p>
                 <h1 className="page-title">{getPageTitle(location.pathname)}</h1>
             </div>
 
-            {/* 2. HEADER ACTIONS (Button, Bell, User Info) */}
             <div className="header-actions">
-
-                {/* Notification Bell/Indicator */}
                 <button 
                     className="icon-button notification-bell" 
                     onClick={handleNotifications}
@@ -89,7 +95,6 @@ const MainNavbar = () => {
                     )}
                 </button>
 
-                {/* Quick Action Button (Primary CTA) */}
                 <button 
                     className="btn-primary" 
                     onClick={handleFileComplaint}
@@ -97,15 +102,13 @@ const MainNavbar = () => {
                     <i className="fas fa-plus-circle"></i> File New Complaint
                 </button>
                 
-                {/* User Info (Profile Pill) */}
                 <div className="user-info">
                     <div className="user-details">
                         <span className="name">{userName}</span>
                         <span className="role">{userRole || ""}</span>
                     </div>
-                    {/* CSS-styled initials badge */}
                     <div className="user-avatar-badge">
-                        {userInitials}
+                        {getUserInitials()}
                     </div>
                 </div>
             </div>

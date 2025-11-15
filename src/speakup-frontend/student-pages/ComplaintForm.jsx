@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import "../../styles/complaintForm.css";
+import "../../styles/styles-student/complaintForm.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import SideBar from "../student-pages/components/SideBar";
 import MainNavbar from "./components/MainNavbar";
 
 import { submitComplaint } from "../../services/complaintServices";
+import { ProfanityFilter } from "../../services/profanityFilter";
 
 
 
@@ -13,42 +14,61 @@ const FileComplaint = () => {
   const navigate = useNavigate();
   const [category, setCategory] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showProfanityAlert, setShowProfanityAlert] = useState(false);
+  const [profanityIssues, setProfanityIssues] = useState([]);
   const [complaintData, setComplaintData] = useState({});
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = new FormData(e.target);
     const data = Object.fromEntries(form.entries());
+    
+    // Check for profanity in form data
+    const profanityCheck = ProfanityFilter.checkFormData(data);
+    
+    if (profanityCheck.hasIssues) {
+      // Show profanity alert instead of proceeding
+      setProfanityIssues(profanityCheck.issues);
+      setShowProfanityAlert(true);
+      return;
+    }
+    
+    // If no profanity, proceed to confirmation modal
     setComplaintData(data);
     setShowModal(true);
   };
 
   const handleConfirm = async () => {
-  try {
-    // Check if there's an uploaded file (if any)
-    const fileInput = document.querySelector('input[type="file"]');
-    const file = fileInput?.files?.[0] || null;
+    try {
+      // Check if there's an uploaded file (if any)
+      const fileInput = document.querySelector('input[type="file"]');
+      const file = fileInput?.files?.[0] || null;
 
-    await submitComplaint(
-      { ...complaintData, category }, // all form data
-      file // optional file
-    );
+      await submitComplaint(
+        { ...complaintData, category }, // all form data
+        file // optional file
+      );
 
-    setShowModal(false);
-    alert(" Your complaint has been submitted successfully!");
+      setShowModal(false);
+      alert("✓ Your complaint has been submitted successfully!");
 
-    // Reset form and category
-    setCategory("");
-    document.getElementById("complaintForm").reset();
+      // Reset form and category
+      setCategory("");
+      document.getElementById("complaintForm").reset();
 
-  } catch (error) {
-    console.error("Error submitting complaint:", error);
-    alert("❌ An error occurred. Please try again.");
-  }
-};
+    } catch (error) {
+      console.error("Error submitting complaint:", error);
+      alert("✖ An error occurred. Please try again.");
+    }
+  };
 
   const handleCancel = () => {
     setShowModal(false);
+  };
+
+  const handleCloseProfanityAlert = () => {
+    setShowProfanityAlert(false);
+    setProfanityIssues([]);
   };
 
   const getCategoryLabel = (cat) => {
@@ -532,7 +552,7 @@ const FileComplaint = () => {
           </div>
 
           <div className="alert-warning">
-            <strong>Important:</strong> Please be respectful and constructive. Offensive language will be filtered.
+            <strong>Important:</strong> Please be respectful and constructive. Offensive language will be filtered and your submission will be rejected.
           </div>
 
           <form id="complaintForm" onSubmit={handleSubmit}>
@@ -562,6 +582,44 @@ const FileComplaint = () => {
           </form>
         </div>
       </div>
+
+      {/* Profanity Alert Modal */}
+      {showProfanityAlert && (
+        <div className="modal-overlay">
+          <div className="modal-content profanity-modal">
+            <div className="modal-header profanity-header">
+              <h3>⚠️ Inappropriate Language Detected</h3>
+            </div>
+
+            <div className="modal-body">
+              <div className="profanity-message">
+                <p>Your submission contains inappropriate or offensive language that violates our community guidelines. Please review and edit the following fields:</p>
+              </div>
+
+              <div className="profanity-issues">
+                {profanityIssues.map((issue, index) => (
+                  <div key={index} className="profanity-item">
+                    <strong>{formatFieldName(issue.field)}:</strong>
+                    <span className="flagged-words">
+                      Contains inappropriate language
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="profanity-notice">
+                <p><strong>Remember:</strong> All complaints should be submitted respectfully and constructively. Offensive language, insults, and vulgar terms are not permitted.</p>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-confirm" onClick={handleCloseProfanityAlert}>
+                Edit My Submission
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {showModal && (

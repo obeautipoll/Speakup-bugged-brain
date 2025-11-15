@@ -3,12 +3,12 @@ import { useAuth } from '../../contexts/authContext'; // Import useAuth for fetc
 import { BarChart3, Users, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import '../../styles-admin/admin.css';
-import SideBar from './components/SideBar';
-import AdminNavbar from './components/NavBar';
+import '../../styles/styles-admin/admin.css';
+import StaffSideBar from './components/StaffSideBar';
+import StaffNavBar from './components/StaffNavBar';
 import UrgentComplaintsWidget from './components/urgency-level';
 
-const AdminDashboard = () => {
+const StaffDashboard = () => {
   const { currentUser } = useAuth();
   const [roleLabel, setRoleLabel] = useState('Staff Role');
   const [staffRole, setStaffRole] = useState(null);
@@ -129,19 +129,12 @@ const AdminDashboard = () => {
   return (
     <div className="admin-container">
       {/* Sidebar */}
-      <SideBar />
+      <StaffSideBar />
 
       {/* Main Content */}
       <main className="main-content">
-        <AdminNavbar />
+        <StaffNavBar />
 
-        {/* Admin Greeting and Role */}
-        <div className="admin-greeting">
-          <p className="text-2xl font-bold pt-14">
-            {getGreeting()}, {currentUser?.displayName || currentUser?.email || 'Admin'}!
-          </p>
-          <p className="text-lg">{roleLabel || 'Staff Role'}</p>
-        </div>
 
         {/* Analytics Cards */}
         <div className="analytics-grid">
@@ -194,11 +187,9 @@ const AdminDashboard = () => {
 
         <UrgentComplaintsWidget />
 
-        {/* Complaints Table */}
-        {/* Table and other content here */}
       </main>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default StaffDashboard;

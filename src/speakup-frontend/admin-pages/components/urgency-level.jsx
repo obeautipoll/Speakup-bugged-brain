@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../../styles-admin/urgency.css'; // Import the CSS file
+import '../../../styles/styles-admin/urgency.css'; // Import the CSS file
 
 const urgentComplaintsData = [
   {
@@ -8,7 +8,7 @@ const urgentComplaintsData = [
     snippet: 'Professor used inappropriate language regarding my assignments...',
     priority: 'Critical',
     timeAgo: '35 mins ago',
-    assigned: 'Unassigned',
+    assigned: 'Staff',
   },
   {
     id: 'UCD-0044',
@@ -16,7 +16,7 @@ const urgentComplaintsData = [
     snippet: 'The air conditioning system in the main lecture hall is leaking badly.',
     priority: 'High',
     timeAgo: '1 hr ago',
-    assigned: 'KASAMA',
+    assigned: 'Staff',
   },
   {
     id: 'UCD-0043',
@@ -24,7 +24,7 @@ const urgentComplaintsData = [
     snippet: 'My grade calculation seems incorrect after the last exam posting.',
     priority: 'Medium',
     timeAgo: '4 hrs ago',
-    assigned: 'Ms. Torralba',
+    assigned: 'OSDS',
   },
   {
     id: 'UCD-0042',
@@ -32,7 +32,7 @@ const urgentComplaintsData = [
     snippet: 'Financial aid documents were lost, delaying my enrollment confirmation.',
     priority: 'Critical',
     timeAgo: '5 hrs ago',
-    assigned: 'Mr. Jones',
+    assigned: 'Unassigned',
   },
 ];
 
@@ -80,7 +80,6 @@ const UrgentComplaintsWidget = () => {
       {/* Header */}
       <div className="widget-header">
         <h3 className="widget-title">
-          <span className="widget-title-icon">🔥</span>
           Urgent Complaints Queue
         </h3>
         <span className="new-count-badge">

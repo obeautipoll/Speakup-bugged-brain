@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../../styles-admin/urgency.css'; // Import the CSS file
+import '../../../styles/styles-admin/urgency.css'; // Import the CSS file
 
 const urgentComplaintsData = [
   {

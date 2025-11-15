@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import "../../styles/styles-student/notification.css";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import SideBar from "../student-pages/components/SideBar";
-import MainNavbar from "./components/MainNavbar";
+import "../../styles/styles-admin/notifs-admin.css";
+import StaffSideBar from './components/StaffSideBar';
+import StaffNavBar from './components/StaffNavBar';
 
 
 
-const Notifications = () => {
+const StaffNotifications = () => {
   const [activeTab, setActiveTab] = useState("all");
   
 
@@ -35,11 +33,11 @@ const Notifications = () => {
 
   return (
     <div id="notificationsPage" className="container">
-      <SideBar />
+      <StaffSideBar />
+      <StaffNavBar />
 
       {/* Main Content */}
       <div className="main-content">
-        <MainNavbar/>
 
         {/* Tabs */}
         <div className="tabs">
@@ -76,4 +74,4 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
+export default StaffNotifications;

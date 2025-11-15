@@ -46,7 +46,7 @@ export const submitComplaint = async (complaintData, file = null) => {
 
     // 🧩 CATEGORY 1 — Academic
     if (complaintData.category === "academic") {
-  customIdPrefix = "AcadCat";
+  customIdPrefix = "Academic";
   complaintDoc = {
     ...baseComplaint,
     courseTitle: complaintData.courseTitle || "",
@@ -63,7 +63,7 @@ export const submitComplaint = async (complaintData, file = null) => {
 
     // 🧩 CATEGORY 2 — Faculty Conduct
     else if (complaintData.category === "faculty-conduct") {
-      customIdPrefix = "FacCat";
+      customIdPrefix = "Faculty";
       complaintDoc = {
         ...baseComplaint,
         departmentOffice: complaintData.departmentOffice || "",
@@ -81,7 +81,7 @@ export const submitComplaint = async (complaintData, file = null) => {
 
     // 🧩 CATEGORY 3 — Facilities
     else if (complaintData.category === "facilities") {
-      customIdPrefix = "FaciCat";
+      customIdPrefix = "Facilities";
       complaintDoc = {
         ...baseComplaint,
         facilityLocation: complaintData.facilityLocation || "",
@@ -97,7 +97,7 @@ export const submitComplaint = async (complaintData, file = null) => {
 
     // 🧩 CATEGORY 4 — Administrative / Student Services
     else if (complaintData.category === "administrative-student-services") {
-      customIdPrefix = "AdminCat";
+      customIdPrefix = "AdminServices";
       complaintDoc = {
         ...baseComplaint,
         officeInvolved: complaintData.officeInvolved || "",
@@ -113,7 +113,7 @@ export const submitComplaint = async (complaintData, file = null) => {
 
     // 🧩 CATEGORY 5 — Other
     else if (complaintData.category === "other") {
-      customIdPrefix = "OtherCat";
+      customIdPrefix = "Other";
       complaintDoc = {
         ...baseComplaint,
         otherDescription: complaintData.otherDescription || "",

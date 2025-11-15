@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../../../styles-admin/sidebar-admin.css";
+import "../../../styles/styles-admin/sidebar-admin.css";
 import { doSignOut } from "../../../firebase/auth";
 
-const SideBar = () => {
+const AdminSideBar = () => {
   const navigate = useNavigate();
 
   const clearSession = () => {
@@ -18,7 +18,7 @@ const SideBar = () => {
       console.error("Logout failed", error);
     } finally {
       clearSession();
-      navigate("/login", { replace: true });
+      navigate("/adminlogin", { replace: true });
     }
   };
 
@@ -42,8 +42,8 @@ const SideBar = () => {
       case "notifications":
         navigate("/anotifications");
         break;
-      case "settings":
-        navigate("/asettings");
+      case "about-info":
+        navigate("/aaboutinfo");
         break;
       default:
         console.error("Unknown navigation page:", page);
@@ -51,7 +51,7 @@ const SideBar = () => {
   };
 
   return (
-    <nav className="sidebar-container">
+    <nav className="admin-sidebar-container">
       <div className="sidebar-content-wrapper">
         <div className="logo">
           <h1>SpeakUp</h1>
@@ -98,7 +98,7 @@ const SideBar = () => {
             className={window.location.pathname === "/asettings" ? "active" : ""}
             onClick={() => handleNavigation("settings")}
           >
-            <i className="fa-solid fa-gear"></i> Settings
+            <i className="fa-solid fa-warning"></i> About
           </li>
 
           <li
@@ -117,4 +117,4 @@ const SideBar = () => {
   );
 };
 
-export default SideBar;
+export default AdminSideBar;

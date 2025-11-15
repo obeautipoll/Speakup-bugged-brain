@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../../styles-admin/approved-table.css';
+import '../../../styles/styles-admin/approved-table.css';
 
 const formatDate = (value) => {
   if (!value) return 'Not set';
@@ -45,7 +45,7 @@ const ApprovedAccountsTable = ({
 
     return (
       <p className="approved-description">
-        Total registered accounts: <span className="account-count">{accounts.length}</span>
+        Total registered student accounts: <span className="account-count">{accounts.length}</span>
       </p>
     );
   };
@@ -83,20 +83,8 @@ const ApprovedAccountsTable = ({
 
     return accounts.map((account) => (
       <tr key={account.id} className="approved-row">
-        <td className="approved-cell approved-cell-id" title={account.id || 'No ID'}>
-          {account.id ? `${account.id.substring(0, 8)}...` : 'N/A'}
-        </td>
         <td className="approved-cell approved-cell-email">
           {account.email || 'No email'}
-        </td>
-        <td className="approved-cell">
-          <span
-            className={`role-badge role-${(account.role || 'unassigned')
-              .toLowerCase()
-              .replace(/\s/g, '-')}`}
-          >
-            {account.role || 'Unassigned'}
-          </span>
         </td>
         <td className="approved-cell approved-cell-date">
           {formatDate(account.createdAt)}

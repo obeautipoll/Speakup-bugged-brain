@@ -3,13 +3,12 @@ import { useAuth } from '../../contexts/authContext'; // Import useAuth for fetc
 import { BarChart3, Users, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
-import '../../styles-admin/admin.css';
-import SideBar from './components/SideBar';
-import AdminNavbar from './components/NavBar';
+import '../../styles/styles-admin/admin.css';
+import AdminSideBar from './components/AdminSideBar';
+import AdminNavbar from './components/AdminNavBar';
 import UrgentComplaintsWidget from './components/urgency-level';
 
 const AdminDashboard = () => {
-  const { currentUser, userRole } = useAuth();  // Get currentUser and userRole from AuthContext
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -94,70 +93,57 @@ const AdminDashboard = () => {
     }
   };
 
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
-  };
-
   return (
     <div className="admin-container">
       {/* Sidebar */}
-      <SideBar />
+      <AdminSideBar />
 
       {/* Main Content */}
       <main className="main-content">
         <AdminNavbar />
 
-        {/* Admin Greeting and Role */}
-        <div className="admin-greeting">
-          <p className="text-2xl font-bold pt-14">
-            {getGreeting()}, {currentUser?.displayName || currentUser?.email || 'Admin'}!
-          </p>
-          <p className="text-lg">{userRole || 'Admin'}</p>
-        </div>
-
+      
         {/* Analytics Cards */}
         <div className="analytics-grid">
           <div className="stat-card">
-            <div className="stat-icon total">
-              <FileText size={24} />
-            </div>
             <div className="stat-content">
               <h3 className="stat-value">{formatStatValue(stats.total)}</h3>
               <p className="stat-label">Total Complaints</p>
             </div>
+            <div className="stat-icon total">
+              <FileText size={24} />
+            </div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon pending">
-              <AlertTriangle size={24} />
-            </div>
             <div className="stat-content">
               <h3 className="stat-value">{formatStatValue(stats.pending)}</h3>
               <p className="stat-label">Pending</p>
             </div>
+            <div className="stat-icon pending">
+              <AlertTriangle size={24} />
+            
+            </div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon progress">
-              <BarChart3 size={24} />
-            </div>
             <div className="stat-content">
               <h3 className="stat-value">{formatStatValue(stats.inProgress)}</h3>
               <p className="stat-label">In Progress</p>
             </div>
+            <div className="stat-icon progress">
+              <BarChart3 size={24} />
+            </div>
+            
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon resolved">
-              <CheckCircle size={24} />
-            </div>
             <div className="stat-content">
               <h3 className="stat-value">{formatStatValue(stats.resolved)}</h3>
               <p className="stat-label">Resolved & Closed</p>
+            </div>
+            <div className="stat-icon resolved">
+              <CheckCircle size={24} />
             </div>
           </div>
         </div>

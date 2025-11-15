@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { collection, deleteDoc, doc, getDocs, orderBy, query, setDoc, updateDoc } from "firebase/firestore";
-import "../../styles-admin/userManage.css";
-import SideBar from "./components/SideBar";
-import AdminNavbar from "./components/NavBar";
+import "../../styles/styles-admin/userManage.css";
+import AdminSideBar from "./components/AdminSideBar";
+import AdminNavbar from "./components/AdminNavBar";
 import ApprovedAccountsTable from "./components/ApprovedTable";
 import { db, firebaseConfig } from "../../firebase/firebase";
 import { getAuth, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
-import { getApp, getApps, initializeApp } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
 
 const ROLE_OPTIONS = [
   { value: "staff", label: "Staff" },
@@ -59,6 +59,7 @@ const AdminUserManage = () => {
 
   const [deletingUserId, setDeletingUserId] = useState(null);
 
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -80,6 +81,17 @@ const AdminUserManage = () => {
 
     fetchUsers();
   }, []);
+
+    useEffect(() => {
+  if (isCreateModalOpen) {
+    document.body.classList.add("modal-open");
+  } else {
+    document.body.classList.remove("modal-open");
+  }
+
+  return () => document.body.classList.remove("modal-open"); 
+}, [isCreateModalOpen]);
+
 
   const managedUsers = useMemo(
     () => users.filter((user) => ALLOWED_ROLES.includes((user.role || "").toLowerCase())),
@@ -197,20 +209,18 @@ const AdminUserManage = () => {
 
   return (
     <div className="user-management-container">
-      <SideBar />
+      <AdminSideBar />
       <AdminNavbar />
 
       <div className="content-area">
         <div className="page-header">
-          <h3 className="page-title">Admin User Approvals</h3>
+          <p className="page-description">
+          Manage staff and KASAMA user access without requiring an authentication onboarding flow.
+          </p>
           <button className="btn-create" onClick={openCreateModal}>
             + Create Staff
           </button>
         </div>
-
-        <p className="page-description">
-          Manage staff and KASAMA user access without requiring an authentication onboarding flow.
-        </p>
 
         {error && <p className="inline-error">{error}</p>}
 
@@ -282,7 +292,7 @@ const AdminUserManage = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h4>Create Staff Profile</h4>
             <p className="modal-description">
-              Provide the staff member&apos;s contact information. This will only create a Firestore record.
+              Provide the staff member&apos;s contact information.
             </p>
             <form className="create-form" onSubmit={handleCreateStaff}>
               <label>
@@ -328,7 +338,7 @@ const AdminUserManage = () => {
                 </select>
               </label>
               <label>
-                Temporary Password
+                Password
                 <input
                   type="password"
                   value={createForm.password}
@@ -338,9 +348,6 @@ const AdminUserManage = () => {
                   autoComplete="new-password"
                   required
                 />
-                <small>
-                  This lets staff bypass the normal registration form; share it with them securely.
-                </small>
               </label>
               <label>
                 Confirm Password
@@ -356,16 +363,13 @@ const AdminUserManage = () => {
               </label>
               {formError && <p className="inline-error">{formError}</p>}
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={closeCreateModal}
-                  disabled={isSavingUser}
-                >
-                  Cancel
-                </button>
                 <button type="submit" className="btn btn-approve" disabled={isSavingUser}>
                   {isSavingUser ? "Creating..." : "Create Staff"}
+                </button>
+                <button type="button" className="btn btn-cancel"
+                  onClick={closeCreateModal} disabled={isSavingUser}
+                >
+                  Cancel
                 </button>
               </div>
             </form>

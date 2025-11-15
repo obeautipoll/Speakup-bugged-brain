@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Assuming you are using react-router-dom v6+
-import "../../../styles/sidebar.css"; // Optional: for component-specific styling
+import "../../../styles/styles-student/sidebar.css"; // Optional: for component-specific styling
 import { doSignOut } from "../../../firebase/auth"; // Firebase Sign-Out function
 
 const SideBar = () => {
@@ -53,14 +53,14 @@ const SideBar = () => {
   const isActive = (path) => window.location.pathname === path ? "active" : "";
 
   return (
-    <nav className="sidebar-container">
-      <div className="sidebar-content-wrapper">
+    <nav className="student-sidebar-container">
+      <div className="student-sidebar-content-wrapper">
         <div className="logo">
           <h1>SpeakUp</h1>
           <p>MSU-IIT Complaint System</p>
         </div>
         
-        <ul className="sidebar-links">
+        <ul className="student-sidebar-links">
           <li 
             className={isActive("/dashboard")}
             onClick={() => handleNavigation("dashboard")}

@@ -1,10 +1,7 @@
-//loginworking
-
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContext';
-import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../firebase/auth';
-import "../../../styles/students.css";
+import { doSignInWithGoogle } from '../../../firebase/auth';
 
 const ROLE_ROUTE_MAP = {
   admin: "/adashboard",
@@ -12,158 +9,131 @@ const ROLE_ROUTE_MAP = {
   kasama: "/sdashboard",
   student: "/dashboard",
 };
+const requiredDomain = "@g.msuiit.edu.ph";
 
 const resolveRouteByRole = (role) => ROLE_ROUTE_MAP[role?.toLowerCase()] || "/dashboard";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { userLoggedIn } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const { userLoggedIn } = useAuth() || {}; // Safe destructure
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const storedUser = useMemo(() => {
+  // Get stored user safely
+  const storedUser = (() => {
     try {
-      const parsed = JSON.parse(localStorage.getItem('user'));
-      return parsed || null;
-    } catch (error) {
-      console.error('Failed to parse stored user:', error);
+      const item = localStorage.getItem('user');
+      return item ? JSON.parse(item) : null;
+    } catch {
       return null;
     }
-  }, [userLoggedIn]);
+  })();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleLogin = async (e) => {
-  e.preventDefault();
-  setErrorMessage('');
-  setIsSigningIn(true);
-
-  try {
-    // Sign in and get user data with role from Firestore
-    const user = await doSignInWithEmailAndPassword(formData.email, formData.password);
-
-    // Store user info and token
-    localStorage.setItem('token', 'mockToken123');
-    localStorage.setItem('user', JSON.stringify(user));
-
-    console.log("User object:", user);
-
-    navigate(resolveRouteByRole(user.role));
-  } catch (err) {
-    setIsSigningIn(false);
-    setErrorMessage(err?.message || 'Invalid email or password');
-  }
-};
-
-  const onGoogleSignIn = async (e) => {
-    e.preventDefault();
-    if (!isSigningIn) {
-      setIsSigningIn(true);
-      try {
-        const user = await doSignInWithGoogle();
-
-        const role = user?.role || 'student';
-
-        localStorage.setItem('token', 'mockToken123');
-        localStorage.setItem('user', JSON.stringify(user));
-
-        navigate(resolveRouteByRole(role));
-      } catch (err) {
-        setIsSigningIn(false);
-        setErrorMessage(err?.message || 'Something went wrong with Google Sign-In');
-      }
-    }
-  };
-
+  // Redirect if already logged in
   if (userLoggedIn && storedUser?.role) {
     return <Navigate to={resolveRouteByRole(storedUser.role)} replace />;
   }
 
+  const handleGoogleLogin = async () => {
+    setIsSigningIn(true);
+    setErrorMessage('');
+
+    try {
+      const user = await doSignInWithGoogle();
+      const role = user?.role || 'student';
+
+      // Only students require domain restriction
+      if (role === 'student' && !user.email?.endsWith(requiredDomain)) {
+        setErrorMessage(`Students must log in with an institutional email: ${requiredDomain}`);
+        setIsSigningIn(false);
+        return;
+      }
+
+      // Store user info
+      localStorage.setItem('token', 'mockToken123');
+      localStorage.setItem('user', JSON.stringify(user));
+
+      navigate(resolveRouteByRole(role));
+    } catch (err) {
+      console.error('Google login error:', err);
+      setErrorMessage(
+        err.message?.includes('domain')
+          ? `Login failed. Must use institutional email: ${requiredDomain}`
+          : 'Something went wrong with Google Sign-In. Check pop-up settings.'
+      );
+      setIsSigningIn(false);
+    }
+  };
+
   return (
-    <div className="login-container">
-      <div className="login-left">
-        <div className="login-logo">SpeakUp</div>
-        <div className="login-subtitle">
-          MSU-IIT Student-Centered Digital Complaint Resolution System
-        </div>
-        <p>
-          Ensures efficient, transparent, and fair handling of student complaints
-          at MSU-IIT through the established student-centered complaint resolution system.
-        </p>
-      </div>
-
-      <div className="login-right">
-        <form className="login-form" onSubmit={handleLogin}>
-          <h2 style={{ marginBottom: "30px", color: "var(--maroon)" }}>Login to Your Account</h2>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {errorMessage && <span className="text-red-600 font-bold">{errorMessage}</span>}
-
-          <button
-            type="submit"
-            disabled={isSigningIn}
-            className={`btn btn-primary btn-block ${isSigningIn ? 'cursor-not-allowed' : ''}`}
-          >
-            {isSigningIn ? 'Signing In...' : 'Login'}
-          </button>
-
-          <div className="login-footer">
-            <p>
-              Don't have an account?{" "}
-              <Link
-              className="text-sm text-blue-600 underline"
-              to="/register"
-              style={{ color: "var(--maroon)", fontWeight: 600 }}
-            >
-              Register Here
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8 font-inter">
+      <div className="flex flex-col md:flex-row max-w-5xl w-full bg-white shadow-2xl rounded-2xl overflow-hidden">
+        
+        {/* Left Side */}
+        <div className="md:w-5/12 p-8 md:p-14 text-white bg-[#8B0000] flex flex-col justify-between">
+          <div>
+            <h1 className="text-4xl font-extrabold mb-4 tracking-wider">SpeakUp</h1>
+            <p className="text-2xl font-light mb-8 opacity-95 leading-snug">
+              MSU-IIT Student-Centered Digital Complaint Resolution System
+            </p>
+            <p className="text-base leading-relaxed opacity-80 border-l-4 border-white pl-4 py-1">
+              Ensuring efficient, transparent, and fair handling of student concerns through a dedicated digital platform.
             </p>
           </div>
-        </form>
-
-        <div className="divider">
-          <div className="line"></div>
-          <span className="or">OR</span>
-          <div className="line"></div>
+          <div className="mt-12 pt-6 border-t border-white border-opacity-40">
+            <h3 className="text-2xl font-semibold mb-2">Welcome Back!</h3>
+            <p className="text-sm opacity-90 italic">
+              The institutional key for access is your official {requiredDomain} account.
+            </p>
+          </div>
         </div>
 
-        <button
-          disabled={isSigningIn}
-          onClick={onGoogleSignIn}
-          className={`w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg text-sm font-medium ${isSigningIn ? 'cursor-not-allowed' : ''}`}
-        >
-          <svg className="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
-            {/* Add Google icon SVG here */}
-          </svg>
-          {isSigningIn ? 'Signing In...' : 'Continue with Google'}
-        </button>
+        {/* Right Side */}
+        <div className="md:w-7/12 p-8 md:p-14 flex flex-col justify-center items-center">
+          <div className="w-full max-w-sm mx-auto text-center">
+            <h2 className="text-2xl font-bold mb-3 text-gray-800">Do you want to speak up?</h2>
+            <p className="text-gray-500 mb-6">Sign in below using your My.IIT account.</p>
+
+            {/* Error */}
+            {errorMessage && (
+              <div className="mb-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm font-medium">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* Google Sign-In */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isSigningIn}
+              className={`
+                w-full flex items-center justify-center gap-x-3 py-3.5 px-6 border-2 border-gray-200
+                rounded-full text-lg font-semibold text-gray-700 bg-white shadow-lg
+                hover:shadow-xl hover:bg-gray-50 transition-all duration-300
+                ${isSigningIn ? 'cursor-not-allowed opacity-70' : ''}
+              `}
+            >
+              <svg className="w-6 h-6" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M43.611 20.083H42V20H24V28H35.844C34.789 31.42 32.22 34.025 28.71 35.107L28.98 35.341L35.253 40.098L35.485 40.237C39.696 36.657 42.417 31.023 43.611 24.083V20.083Z" fill="#4285F4"/>
+                <path d="M24 44C31.571 44 38.082 41.523 43.611 36.083L35.485 40.237C33.28 41.742 30.638 42.667 27.79 42.667C22.028 42.667 17.067 38.648 15.342 33.723L15.027 33.829L8.68 38.52L8.53 38.654C12.352 42.484 17.886 44 24 44Z" fill="#34A853"/>
+                <path d="M8.53 38.654C7.792 36.568 7.333 34.305 7.333 32C7.333 29.695 7.792 27.432 8.53 25.346L8.583 25.266L2.31 20.575L2.213 20.732C0.77 23.714 0 26.839 0 30C0 33.161 0.77 36.286 2.213 39.268L8.53 38.654Z" fill="#FBBC04"/>
+                <path d="M24 11.333C27.067 11.333 30.077 12.378 32.553 14.654L38.401 8.805C35.035 5.568 29.878 4 24 4C17.886 4 12.352 5.516 8.53 9.346L15.342 14.277C17.067 19.202 22.028 23.221 27.79 23.221C29.695 23.221 31.621 22.84 33.398 22.12L33.684 22.007L35.844 28H43.611C41.765 24.646 38.381 21.905 34.464 20.083H24V11.333Z" fill="#EA4335"/>
+              </svg>
+              {isSigningIn ? 'Connecting...' : 'Continue with Google'}
+            </button>
+
+            {/* Registration */}
+            <div className="text-center mt-8">
+              <p className="text-gray-600 text-sm">
+                Does't have an account yet?
+                <Link to="/register" className="text-sm font-semibold ml-1 hover:text-red-700" style={{ color: "#8B0000" }}>
+                  Register Here
+                </Link>
+              </p>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -6,12 +6,13 @@ import { getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCck-c9obxDRT3Scw1BCyD0Z71NQxX1jCI",
-  authDomain: "bbcomplaintsystem.firebaseapp.com",
-  projectId: "bbcomplaintsystem",
-  storageBucket: "bbcomplaintsystem.appspot.com",
-  messagingSenderId: "26816550019",
-  appId: "1:26816550019:web:51ef9c35605e339aa6f7b6",
+  apiKey: "AIzaSyC1AAbnl6oj7QGVnfmeeM679NNiq0bEYXc",
+  authDomain: "complaint-system-db.firebaseapp.com",
+  projectId: "complaint-system-db",
+  storageBucket: "complaint-system-db.firebasestorage.app",
+  messagingSenderId: "862929055008",
+  appId: "1:862929055008:web:8ac50b77548810177abb45",
+  measurementId: "G-NHVBMP3RST"
 };
 
 const app = initializeApp(firebaseConfig);

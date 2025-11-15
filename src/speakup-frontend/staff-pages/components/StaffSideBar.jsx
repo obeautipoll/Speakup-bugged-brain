@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../../../styles-admin/sidebar-admin.css";
+import '../../../styles/styles-staff/sidebar-staff.css';
 import { doSignOut } from "../../../firebase/auth";
 
-const SideBar = () => {
+const StaffSideBar = () => {
   const navigate = useNavigate();
 
   const clearSession = () => {
@@ -39,16 +39,13 @@ const SideBar = () => {
       case "notifications":
         navigate("/snotifications");
         break;
-      case "settings":
-        navigate("/ssettings");
-        break;
       default:
         console.error("Unknown navigation page:", page);
     }
   };
 
   return (
-    <nav className="sidebar-container">
+    <nav className="staff-sidebar-container">
       <div className="sidebar-content-wrapper">
         <div className="logo">
           <h1>SpeakUp</h1>
@@ -86,12 +83,6 @@ const SideBar = () => {
             <i className="fa-solid fa-bell"></i> Notifications
           </li>
 
-          <li 
-            className={window.location.pathname === "/ssettings" ? "active" : ""}
-            onClick={() => handleNavigation("settings")}
-          >
-            <i className="fa-solid fa-gear"></i> Settings
-          </li>
 
           <li
             onClick={() => {
@@ -109,4 +100,4 @@ const SideBar = () => {
   );
 };
 
-export default SideBar;
+export default StaffSideBar;

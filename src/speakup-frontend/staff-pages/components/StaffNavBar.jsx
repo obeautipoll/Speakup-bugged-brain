@@ -1,21 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "@fortawesome/fontawesome-free/css/all.min.css"; 
-import "../../../styles/navbar.css"
+import { useAuth } from '../../../contexts/authContext';
+import "../../../styles/styles-staff/navbar-staff.css";
 
-// Assuming the necessary styles (including the fixed positioning logic) 
-// are correctly loaded from main-styles.css or a similar file in the parent component.
-
-const AdminNavbar = () => {
+const StaffNavBar = () => {
     // Hooks for navigation and location tracking
+    const { currentUser, userRole } = useAuth();
+    const [roleLabel, setRoleLabel] = useState('Staff Role');
+    const [staffRole, setStaffRole] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
-
-    // Mock user data (Replace with actual props or context data)
-    const userName = "Office of Student & Development Services";
-    const userRole = "Administrator";
+    const userName = currentUser ? currentUser.displayName || currentUser.email.split('@')[0] : "User"; // Changed default from LoL to User
     const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
     const unreadNotifications = 11; // Mock count
+
+    useEffect(() => {
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('user'));
+          if (storedUser?.role) {
+            setRoleLabel(storedUser.role);
+            setStaffRole(storedUser.role.toLowerCase());
+          } else {
+            setStaffRole('');
+          }
+        } catch (error) {
+          console.error('Failed to parse stored user for role:', error);
+          setStaffRole('');
+        }
+      }, []);
     
     // --- Helper Functions ---
 
@@ -29,87 +42,78 @@ const AdminNavbar = () => {
 
     // Determine the page title based on the current URL path
     const getPageTitle = (path) => {
-        // Strip leading/trailing slashes and normalize the path
         const normalizedPath = path.toLowerCase().replace(/^\/|\/$/g, '');
         
         switch (normalizedPath) {
-            case "admin/dashboard":
+            case "sdashboard":
                 return "Dashboard";
-            case "admin/monitor-complaints":
+            case "smonitorcomplaints":
                 return "Monitor Complaints";
-            case "admin/usermanage":
-                return "User Management";
-            case "admin/analytics":
+            case "sanalytics":
                 return "Reports & Analytics";
-            case "admin/notifications":
+            case "snotifications": 
                 return "Notifications";
-            case "admin/settings":
-                return "Settings";
-            case "admin/login":
+            case "/adminlogin":
             case "login":
-                return "Login"; // Should typically not see the navbar here, but included for completeness
+                return "Login";
             default:
-                // Handle cases like nested routes (e.g., /history/123)
-                if (normalizedPath.startsWith('dashboard/')) {
+                // FIX A: Changed dashboard/ to sdashboard/
+                if (normalizedPath.startsWith('sdashboard/')) { 
                     return "Complaint Details"; 
                 }
                 return "";
         }
     };
 
-    // Handler for the primary button click
+    // FIX B: Handler for the primary button click - Updated navigation route
     const handleFileComplaint = () => {
-        navigate("/admin/monitoring"); 
+        navigate("/smonitorcomplaints"); 
     };
 
-    // Handler for the notification bell
+    // FIX B: Handler for the notification bell - Updated navigation route
     const handleNotifications = () => {
-        navigate("/admin-notifications"); 
+        navigate("/snotifications"); 
     };
 
     // --- Render ---
 
     return (
-        // The 'main-navbar' class implements the fixed/sticky position and clean styling
-        <div className="main-navbar">
+        <div className="staff-main-navbar">
             
             {/* 1. PAGE TITLE GROUP (Greeting and Dynamic Title) */}
             <div className="page-title-group">
+                {/* FIX 1: Default to STAFF (or KASAMA) if role is missing, and uppercase it */}
                 <p className="welcome-greeting">{getGreeting()}, {userName}!</p> 
-                {/* Dynamically set the page title */}
-                <h1 className="page-title">{getPageTitle(location.pathname)}</h1>
+                <h1 className="staff-page-title">{getPageTitle(location.pathname)}</h1>
             </div>
 
             {/* 2. HEADER ACTIONS (Button, Bell, User Info) */}
-            <div className="header-actions">
+            <div className="staff-header-actions">
 
                 {/* Notification Bell/Indicator */}
                 <button 
-                    className="icon-button notification-bell" 
+                    className="staff-icon-button notification-bell" 
                     onClick={handleNotifications}
                     aria-label={`You have ${unreadNotifications} unread notifications`}
                 >
                     <i className="fas fa-bell"></i>
                     {unreadNotifications > 0 && (
-                        <span className="notification-badge">{unreadNotifications}</span>
+                        <span className="staff-notification-badge">{unreadNotifications}</span>
                     )}
                 </button>
-
-               
                 
                 {/* User Info (Profile Pill) */}
-                <div className="user-info">
-                    <div className="user-details">
+                <div className="staff-user-info">
+                    <div className="staff-user-details">
                         <span className="name">{userName}</span>
-                        <span className="role">{userRole}</span>
+                        <span className="role">{roleLabel || 'Staff Role'}</span> 
                     </div>
-                    {/* CSS-styled initials badge */}
-                    <div className="user-avatar-badge">
-                        
+                    <div className="staff-user-avatar-badge">
+                        {userInitials}
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-export default AdminNavbar;
+export default StaffNavBar;

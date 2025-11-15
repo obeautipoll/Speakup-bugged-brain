@@ -1,12 +1,10 @@
 import { useRoutes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/authContext";
 
-// Styles
-import "./styles/students.css";
-import "./styles-admin/admin.css"; // Corrected the typo in the file name
 
 // Auth components
 import Login from "./components/auth/login";
+import AdminLogin from "./components/auth/adminLogin"; // <-- Add this
 import Register from "./components/auth/register";
 
 // Layout and page components
@@ -23,11 +21,14 @@ import AdminDashboard from "./speakup-frontend/admin-pages/admin-dashboard";
 import AdminUserManage from "./speakup-frontend/admin-pages/admin-userManage";
 import AdminMonitorComplaints from "./speakup-frontend/admin-pages/admin-monitoring";
 import AdminAnalytics from "./speakup-frontend/admin-pages/admin-analytics";
+import AdminNotifications from "./speakup-frontend/admin-pages/admin-notifications";
+import AdminAboutInfo from "./speakup-frontend/admin-pages/admin-about-info";
 
 // Staff / KASAMA Pages
-import StaffDashboard from "./speakup-frontend/staff-pages/admin-dashboard";
-import StaffMonitorComplaints from "./speakup-frontend/staff-pages/admin-monitoring";
+import StaffDashboard from "./speakup-frontend/staff-pages/staff-dashboard";
+import StaffMonitorComplaints from "./speakup-frontend/staff-pages/staff-monitoring";
 import StaffAnalytics from "./speakup-frontend/staff-pages/admin-analytics";
+import StaffNotifications from "./speakup-frontend/staff-pages/staff-notification";
 
 const roleMatches = (userRole, required) => {
   if (!required) return true;
@@ -35,35 +36,64 @@ const roleMatches = (userRole, required) => {
   return roles.map((role) => role.toLowerCase()).includes((userRole || "").toLowerCase());
 };
 
+const ROLE_ROUTE_MAP = {
+  admin: "/adashboard",
+  staff: "/sdashboard",
+  kasama: "/sdashboard",
+  student: "/dashboard",
+};
+
+const resolveRouteByRole = (role) => ROLE_ROUTE_MAP[role?.toLowerCase()] || "/dashboard";
+
+
 const PrivateRoute = ({ element, requiredRole }) => {
   const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || !roleMatches(user.role, requiredRole)) {
-    return <Navigate to="/login" replace />;
+  const role = user?.role?.toLowerCase();
+
+  if (!user) {
+    // redirect admins/staff to admin login, students to student login
+    return <Navigate to={role && ["admin", "staff", "kasama"].includes(role) ? "/adminlogin" : "/login"} replace />;
   }
+
+  if (!roleMatches(role, requiredRole)) {
+    // optional: redirect to their default dashboard
+    return <Navigate to={resolveRouteByRole(role)} replace />;
+  }
+
   return element;
 };
 
+
 function App() {
   const resolveDefaultRoute = () => {
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (!storedUser?.role) return "/login";
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser?.role) return "/login";
 
-      const role = storedUser.role.toLowerCase();
-      if (role === "admin") return "/adashboard";
-      if (role === "staff" || role === "kasama") return "/sdashboard";
-      if (role === "student") return "/dashboard";
-    } catch (error) {
-      console.error("Failed to parse stored user:", error);
+    const role = storedUser.role.toLowerCase();
+    switch (role) {
+      case "admin":
+        return "/adashboard";
+      case "staff":
+      case "kasama":
+        return "/sdashboard";
+      case "student":
+        return "/dashboard";
+      default:
+        return "/login";
     }
+  } catch (error) {
+    console.error("Failed to parse stored user:", error);
     return "/login";
-  };
+  }
+};
 
   const defaultRoute = resolveDefaultRoute();
 
   const routesArray = [
     { path: "/", element: <Navigate to={defaultRoute} replace /> },
     { path: "/login", element: <Login /> },
+    { path: "/adminlogin", element: <AdminLogin /> },
     { path: "/register", element: <Register /> },
     {
       path: "/dashboard",
@@ -98,6 +128,14 @@ function App() {
       element: <PrivateRoute element={<AdminMonitorComplaints />} requiredRole="admin" />,
     },
     {
+       path: "/anotifications",
+      element: <PrivateRoute element={<AdminNotifications />} requiredRole="admin" />,
+    },
+    {
+      path: "/aaboutinfo",
+      element: <PrivateRoute element={<AdminAboutInfo />} requiredRole="admin" />,
+    },
+    {
       path: "/sdashboard",
       element: <PrivateRoute element={<StaffDashboard />} requiredRole={["staff", "kasama"]} />,
     },
@@ -108,6 +146,10 @@ function App() {
     {
       path: "/sanalytics",
       element: <PrivateRoute element={<StaffAnalytics />} requiredRole={["staff", "kasama"]} />,
+    },
+    {
+      path: "/snotifications",
+      element: <PrivateRoute element={<StaffNotifications />} requiredRole={["staff", "kasama"]} />,
     },
     { path: "*", element: <Navigate to={defaultRoute} replace /> },
   ];

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../styles/students.css";
+import "../../styles/styles-student/students.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import SideBar from "../student-pages/components/SideBar";

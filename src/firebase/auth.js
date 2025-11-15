@@ -8,27 +8,22 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore"; // Firestore imports
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
-// Function to create a new user with email/password
+// ========== EMAIL + PASSWORD (optional, can keep or disable later) ==========
 export const doCreateUserWithEmailAndPassword = async (email, password, role = "student") => {
-  try { 
-    // Create user with email and password
+  try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user; // Get the user object from the credential
+    const user = userCredential.user;
 
-    // Firestore instance
     const db = getFirestore();
-
-    // Check if the user already exists in Firestore
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-      // If the user doesn't already exist, create a new user document with the role
       await setDoc(userDocRef, {
         email: user.email,
-        role: role,  // Dynamically set the role, defaults to 'student'
+        role,
         createdAt: new Date(),
       });
     }
@@ -36,88 +31,84 @@ export const doCreateUserWithEmailAndPassword = async (email, password, role = "
     return user;
   } catch (error) {
     console.error("Error creating user:", error);
-    throw error;  // Propagate the error to be handled by the caller
+    throw error;
   }
 };
 
-// Function to sign in a user with email/password
-export const doSignInWithEmailAndPassword = async (email, password) => {
+// ========== EMAIL LOGIN ==========
+export const doSignInWithEmailAndPassword = async (email, password, expectedRole) => {
   try {
-    // Sign in the user with email and password
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user; // Get the user object from the credential
+    const user = userCredential.user;
 
-    // Firestore instance
     const db = getFirestore();
-    const userDocRef = doc(db, "users", user.uid);  // Get the user document reference
-    const userDoc = await getDoc(userDocRef);  // Check if user exists in Firestore
-
-    if (userDoc.exists()) {
-      // If user exists, return the user data along with their role
-      const userData = userDoc.data();
-      return { ...user, role: userData.role }; // Add the role to the user object
-    } else {
-      throw new Error('User not found in the database');
-    }
-  } catch (error) {
-    console.error("Error signing in:", error);
-    throw error; // Propagate the error to be handled by the caller
-  }
-};
-
-// Function to sign in a user using Google Authentication
-export const doSignInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(auth, provider);
-  const user = result.user;
-
-  // Firestore instance
-  const db = getFirestore();
-
-  try {
-    // Check if the user is already in the 'users' collection
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
-    let role = "student";
-    if (!userDoc.exists()) {
-      await setDoc(userDocRef, {
-        email: user.email,
-        role,
-        createdAt: new Date(),
-      });
-    } else {
+    if (userDoc.exists()) {
       const userData = userDoc.data();
-      if (userData?.role) {
-        role = userData.role;
+      
+      // Optional: role validation for login page
+      if (expectedRole && userData.role !== expectedRole) {
+        throw new Error(`Please log in from the correct ${expectedRole} login page.`);
       }
-    }
 
-    return { ...user, role };
+      return { ...user, role: userData.role };
+    } else {
+      throw new Error("User not found in the database");
+    }
   } catch (error) {
-    console.error("Error adding user to Firestore:", error);
-    throw error;  // Propagate the error to be handled by the caller
+    console.error("Error signing in:", error);
+    throw error;
   }
 };
 
-// Function to sign out the current user
-export const doSignOut = () => {
-  return auth.signOut();
+
+// ========== GOOGLE LOGIN (with IIT restriction) ==========
+export const doSignInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+
+  provider.setCustomParameters({
+    hd: "g.msuiit.edu.ph",
+    prompt: "select_account",
+  });
+
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
+
+  if (!user.email.endsWith("@g.msuiit.edu.ph")) {
+    await auth.signOut();
+    throw new Error("Please use your official MSU-IIT email (g.msuiit.edu.ph).");
+  }
+
+  const db = getFirestore();
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  let role = "student";
+  if (!userDoc.exists()) {
+    await setDoc(userDocRef, {
+      email: user.email,
+      role,
+      createdAt: new Date(),
+    });
+  } else {
+    const userData = userDoc.data();
+    if (userData?.role) role = userData.role;
+  }
+
+  return { ...user, role };
 };
 
-// Function to send password reset email
-export const doPasswordReset = (email) => {
-  return sendPasswordResetEmail(auth, email);
-};
+// ========== OTHER FUNCTIONS ==========
 
-// Function to change the password of the current user
-export const doPasswordChange = (password) => {
-  return updatePassword(auth.currentUser, password);
-};
+export const doSignOut = () => auth.signOut();
 
-// Function to send email verification to the current user
-export const doSendEmailVerification = () => {
-  return sendEmailVerification(auth.currentUser, {
+export const doPasswordReset = (email) => sendPasswordResetEmail(auth, email);
+
+export const doPasswordChange = (password) => updatePassword(auth.currentUser, password);
+
+export const doSendEmailVerification = () =>
+  sendEmailVerification(auth.currentUser, {
     url: `${window.location.origin}/dashboard`,
   });
-};
