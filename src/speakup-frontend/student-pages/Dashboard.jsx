@@ -165,10 +165,8 @@ const Dashboard = () => {
     <div className="container dashboard-page">
       <SideBar />
 
-
       <div className="main-content">
-        <MainNavbar />
-
+          <MainNavbar />
 
         {/* Welcome Section */}
         <div className="dashboard-welcome">

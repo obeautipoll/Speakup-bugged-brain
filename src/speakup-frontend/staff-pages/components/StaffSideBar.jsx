@@ -18,7 +18,7 @@ const StaffSideBar = () => {
       console.error("Logout failed", error);
     } finally {
       clearSession();
-      navigate("/login", { replace: true });
+      navigate("/adminlogin", { replace: true });
     }
   };
 

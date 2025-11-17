@@ -130,12 +130,12 @@ const AdminNavbar = () => {
             {/* 1. PAGE TITLE GROUP (Greeting and Dynamic Title) */}
             <div className="admin-page-title-group">
                 {/* Dynamically set the page title */}
-                <p className="welcome-greeting">{getGreeting()}, {userRole || "Admin"} {userName}!</p> 
-                <h1 className="page-title">{getPageTitle(location.pathname)}</h1>
+                <p className="admin-welcome-greeting">{getGreeting()}, {userRole || "Admin"} {userName}!</p> 
+                <h1 className="admin-page-title">{getPageTitle(location.pathname)}</h1>
             </div>
 
             {/* 2. HEADER ACTIONS (Button, Bell, User Info) */}
-            <div className="header-actions">
+            <div className="admin-header-actions">
 
                 {/* Notification Bell/Indicator */}
                 <button 
@@ -145,7 +145,7 @@ const AdminNavbar = () => {
                 >
                     <i className="fas fa-bell"></i>
                     {unreadNotifications > 0 && (
-                        <span className="notification-badge">{unreadNotifications}</span>
+                        <span className="admin-notification-badge">{unreadNotifications}</span>
                     )}
                 </button>
 

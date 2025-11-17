@@ -3,7 +3,7 @@
 
 /* Sidebar Container */
 .student-sidebar-container {
-  position: auto;
+  position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
@@ -30,30 +30,26 @@
 
 /* Logo Section */
 .logo {
-  padding: 0 1.5rem 2rem;
-  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-  margin-bottom: 2rem;
-}
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+        }
 
-.logo h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFFFFF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.5px;
-  font-family: 'Poppins', sans-serif;
-}
+        .logo h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+            color: #FFD700;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
 
-.logo p {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-  font-weight: 400;
-  font-family: 'Poppins', sans-serif;
-}
+        .logo p {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
 
 /* Sidebar Links */
 .student-sidebar-links {

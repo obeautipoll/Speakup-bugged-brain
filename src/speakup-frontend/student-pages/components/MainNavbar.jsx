@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContext';
 import "@fortawesome/fontawesome-free/css/all.min.css"; 
 import "../../../styles/styles-student/navbar-student.css"
+import { useNotifications } from '../../../contexts/notificationsContext';
 
 const MainNavbar = () => {
     const location = useLocation();
@@ -37,7 +38,7 @@ const MainNavbar = () => {
         return emailPrefix.substring(0, 2).toUpperCase();
     };
     
-    const unreadNotifications = 3;
+    const { unreadCount } = useNotifications();
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -87,11 +88,11 @@ const MainNavbar = () => {
                 <button 
                     className="icon-button notification-bell" 
                     onClick={handleNotifications}
-                    aria-label={`You have ${unreadNotifications} unread notifications`}
+                    aria-label={`You have ${unreadCount} unread notifications`}
                 >
                     <i className="fas fa-bell"></i>
-                    {unreadNotifications > 0 && (
-                        <span className="notification-badge">{unreadNotifications}</span>
+                    {unreadCount > 0 && (
+                        <span className="notification-badge">{unreadCount}</span>
                     )}
                 </button>
 

@@ -579,7 +579,7 @@ const handleUpdateStatus = async (newStatus) => {
                 ) : (
                   filteredComplaints.map((c) => (
                     <tr key={c.id}>
-                      <td>{c.id}</td>
+                      <td>{c.id.slice(-8).toUpperCase()}</td>
                       <td>{getCategoryLabel(c.category)}</td>
                       <td>
                       <span 
@@ -643,11 +643,10 @@ const handleUpdateStatus = async (newStatus) => {
               <div className="modal-container" onClick={(e) => e.stopPropagation()}>
              <div className="modal-header">
               <div>
-                <h3>Complaint #{selectedComplaint.id}</h3>
+                <h3>Complaint Details</h3>
                 <p>
-                  {(selectedComplaint.college || "No college specified") +
-                    " - " +
-                    getCategoryLabel(selectedComplaint.category)}
+                  {(getCategoryLabel(selectedComplaint.category)) +
+                  " ID: " + selectedComplaint.id.slice(-8).toUpperCase()}
                 </p>
               </div>
                 <button className="btn-close" onClick={closeModal}>
