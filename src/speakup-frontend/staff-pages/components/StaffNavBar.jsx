@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "@fortawesome/fontawesome-free/css/all.min.css"; 
 import { useAuth } from '../../../contexts/authContext';
+import { useStaffNotifications } from '../../../hooks/useStaffNotifications';
 import "../../../styles/styles-staff/navbar-staff.css";
 
 const StaffNavBar = () => {
@@ -11,9 +12,14 @@ const StaffNavBar = () => {
     const [staffRole, setStaffRole] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
-    const userName = currentUser ? currentUser.displayName || currentUser.email.split('@')[0] : "User"; // Changed default from LoL to User
-    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
-    const unreadNotifications = 11; // Mock count
+    const userName = currentUser ? (currentUser.displayName || "User") : "User"; // Do not expose email
+    const userInitials = (currentUser?.displayName || userName)
+      .split(' ')
+      .filter(Boolean)
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+    const { unreadCount: unreadNotifications } = useStaffNotifications();
 
     useEffect(() => {
         try {
@@ -104,10 +110,6 @@ const StaffNavBar = () => {
                 
                 {/* User Info (Profile Pill) */}
                 <div className="staff-user-info">
-                    <div className="staff-user-details">
-                        <span className="name">{userName}</span>
-                        <span className="role">{roleLabel || 'Staff Role'}</span> 
-                    </div>
                     <div className="staff-user-avatar-badge">
                         {userInitials}
                     </div>

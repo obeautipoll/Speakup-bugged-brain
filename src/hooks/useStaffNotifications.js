@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { useAuth } from "../contexts/authContext";
 
 const LS_KEY = "staff_notifications_last_seen";
 
@@ -34,6 +35,7 @@ const toMs = (val) => {
 };
 
 export function useStaffNotifications() {
+  const { currentUser } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastSeenAt, setLastSeenAt] = useState(getLastSeen());
@@ -80,13 +82,31 @@ export function useStaffNotifications() {
             });
           }
 
+          // Backfill latest status update if available
+          const statusMs = toMs(d.statusUpdatedAt);
+          if (d.status && statusMs > 0) {
+            initial.push({
+              id: `${doc.id}::status::${d.status}-${statusMs}`,
+              type: "status",
+              complaintId: doc.id,
+              category: d.category || "",
+              title: `Status updated to ${d.status}`,
+              date: statusMs,
+            });
+          }
+
           const feedbackHistory = Array.isArray(d.feedbackHistory) ? d.feedbackHistory : [];
           let lastFeedbackMs = 0;
+          let lastFeedbackItem = null;
           if (feedbackHistory.length) {
-            lastFeedbackMs = toMs(feedbackHistory[feedbackHistory.length - 1]?.date);
+            lastFeedbackItem = feedbackHistory[feedbackHistory.length - 1];
+            lastFeedbackMs = toMs(lastFeedbackItem?.date);
           }
           const feedbackMs = Math.max(lastFeedbackMs, toMs(d.feedbackUpdatedAt));
-          if ((d.Feedback || feedbackHistory.length > 0) && feedbackMs > 0) {
+          const ownUid = currentUser?.uid;
+          const ownEmail = currentUser?.email;
+          const authoredBySelf = lastFeedbackItem?.adminId && (lastFeedbackItem.adminId === ownUid || lastFeedbackItem.adminId === ownEmail);
+          if ((d.Feedback || feedbackHistory.length > 0) && feedbackMs > 0 && !authoredBySelf) {
             initial.push({
               id: `${doc.id}::feedback::${feedbackMs}`,
               type: "feedback",
@@ -101,6 +121,7 @@ export function useStaffNotifications() {
             feedbackCount: feedbackHistory.length,
             assignedRole: d.assignedRole,
             feedbackValue: d.Feedback || "",
+            status: d.status,
           });
         });
 
@@ -118,7 +139,7 @@ export function useStaffNotifications() {
       snapshot.docChanges().forEach((change) => {
         const id = change.doc.id;
         const d = change.doc.data() || {};
-        const prev = prevRef.current.get(id) || { feedbackCount: 0, assignedRole: undefined, feedbackValue: "" };
+        const prev = prevRef.current.get(id) || { feedbackCount: 0, assignedRole: undefined, feedbackValue: "", status: undefined };
 
         const nowMs = Date.now();
 
@@ -131,6 +152,19 @@ export function useStaffNotifications() {
             category: d.category || "",
             title: "New assigned complaint",
             date: nowMs,
+          });
+        }
+
+        // Status change
+        if (change.type === "modified" && d.status && d.status !== prev.status) {
+          const statusMs = toMs(d.statusUpdatedAt) || nowMs;
+          newNotifs.push({
+            id: `${id}::status::${d.status}-${statusMs}`,
+            type: "status",
+            complaintId: id,
+            category: d.category || "",
+            title: `Status updated to ${d.status}`,
+            date: statusMs,
           });
         }
 
@@ -148,29 +182,36 @@ export function useStaffNotifications() {
             const t = Date.parse(last.date);
             if (Number.isFinite(t)) dateMs = t;
           }
-          newNotifs.push({
-            id: `${id}::feedback::${feedbackCount}-${dateMs}`,
-            type: "feedback",
-            complaintId: id,
-            category: d.category || "",
-            title: "New feedback from admin",
-            date: dateMs,
-          });
+          const ownUid = currentUser?.uid;
+          const ownEmail = currentUser?.email;
+          const authoredBySelf = last?.adminId && (last.adminId === ownUid || last.adminId === ownEmail);
+          if (!authoredBySelf) {
+            newNotifs.push({
+              id: `${id}::feedback::${feedbackCount}-${dateMs}`,
+              type: "feedback",
+              complaintId: id,
+              category: d.category || "",
+              title: "New feedback from admin",
+              date: dateMs,
+            });
+          }
         }
 
-        prevRef.current.set(id, { feedbackCount, assignedRole: d.assignedRole, feedbackValue });
+        prevRef.current.set(id, { feedbackCount, assignedRole: d.assignedRole, feedbackValue, status: d.status });
       });
 
       if (newNotifs.length) {
         setNotifications((prev) => {
           const merged = [...newNotifs, ...prev];
-          return merged.slice(0, 100);
+          return merged
+            .sort((a,b)=> b.date - a.date)
+            .slice(0, 100);
         });
       }
     }, () => setLoading(false));
 
     return () => { try { unsub && unsub(); } catch {} };
-  }, [staffRole]);
+  }, [staffRole, currentUser?.uid, currentUser?.email]);
 
   const unreadCount = useMemo(() => notifications.reduce((acc,n)=> (n.date>lastSeenAt?acc+1:acc), 0), [notifications, lastSeenAt]);
 

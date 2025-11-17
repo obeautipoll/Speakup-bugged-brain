@@ -127,7 +127,7 @@ const StaffNotifications = () => {
               className={`notification-item ${n.date > lastSeenAt ? "unread" : "read"}`}
               onClick={() => {
                 markItemRead(n.date);
-                const focusTab = n.type === 'feedback' ? 'feedback' : 'details';
+                const focusTab = n.type === 'feedback' ? 'feedback' : (n.type === 'status' ? 'status' : 'details');
                 navigate('/smonitorcomplaints', { state: { complaintId: n.complaintId, focusTab } });
               }}
             >

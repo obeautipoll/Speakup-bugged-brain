@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import "../../styles/styles-staff/monitor-staff.css";
-import StaffSideBar from "./components/StaffSideBar";
-import StaffNavBar from "./components/StaffNavBar";
+import React, { useState, useEffect } from "react";
+import "../../styles-admin/monitor-admin.css";
+import SideBar from "./components/SideBar";
+import AdminNavbar from "./components/NavBar";
 import { db } from "../../firebase/firebase";
-import { collection, getDocs, orderBy, query, updateDoc, doc, arrayUnion, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, updateDoc, doc } from "firebase/firestore";
 import { useAuth } from "../../contexts/authContext";
 
 const AdminMonitorComplaints = () => {
@@ -36,9 +35,6 @@ const AdminMonitorComplaints = () => {
   const [noteError, setNoteError] = useState("");
   const [staffRole, setStaffRole] = useState(null);
   const { currentUser } = useAuth();
-  const location = useLocation();
-  const hasAppliedRouteSelection = useRef(false);
-  const complaintUnsubRef = useRef(null);
   const VIEW_TABS = ["details", "feedback"];
   const MANAGE_TABS = ["details", "feedback", "notes", "status"];
   const TAB_LABELS = {
@@ -135,14 +131,6 @@ const AdminMonitorComplaints = () => {
     setAssignTo(complaint.assignedTo || "");
     setAssignMessage("");
     setNewStatus(complaint.status || "pending");
-
-    // Listen live to selected complaint updates (feedback/status) while modal is open
-    try { complaintUnsubRef.current && complaintUnsubRef.current(); } catch {}
-    complaintUnsubRef.current = onSnapshot(doc(db, "complaints", complaint.id), (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data() || {};
-      setSelectedComplaint((prev) => (prev && prev.id === complaint.id ? { ...prev, ...data } : prev));
-    });
   };
 
   const switchToManageMode = (defaultTab = "details") => {
@@ -155,39 +143,15 @@ const AdminMonitorComplaints = () => {
     setSelectedComplaint(null);
     setActiveTab("details");
     setModalMode("view");
-    try { complaintUnsubRef.current && complaintUnsubRef.current(); } catch {}
-    complaintUnsubRef.current = null;
   };
-
-  // If navigated from notifications, open the target complaint and tab automatically
-  useEffect(() => {
-    if (hasAppliedRouteSelection.current) return;
-    const state = location?.state || {};
-    const targetId = state.complaintId;
-    const focusTab = state.focusTab;
-    if (!targetId) return;
-
-    const target = complaints.find((c) => c.id === targetId);
-    if (target) {
-      if (focusTab === 'status') {
-        setModalMode('manage');
-        setActiveTab('status');
-        openModal(target, 'manage', 'status');
-      } else if (focusTab === 'feedback') {
-        openModal(target, 'view', 'feedback');
-      } else {
-        openModal(target, 'view', 'details');
-      }
-      hasAppliedRouteSelection.current = true;
-    }
-  }, [location?.state, complaints]);
 
   
 
   // 💬 Feedback & Admin actions (same as before)
   const getAdminIdentifier = () => currentUser?.uid || currentUser?.email || "admin-user";
 
-  const getAdminDisplayName = () => "Administrator"; // Do not expose email or personal name
+  const getAdminDisplayName = () =>
+    currentUser?.displayName || currentUser?.email || "Admin User";
 
   const getSharedNote = (complaint) =>
     (complaint?.adminNotes && complaint.adminNotes[0]) || null;
@@ -216,8 +180,6 @@ const AdminMonitorComplaints = () => {
     setIsSavingNote(false);
   };
 
-
-  
   const handleSaveAdminNote = async () => {
     if (!noteModalComplaint || !currentUser) return;
     if (!staffRole) {
@@ -273,46 +235,34 @@ const AdminMonitorComplaints = () => {
     }
   };
 
-  const handleSendFeedback = async () => {
+  const handleSendFeedback = () => {
     if (!selectedComplaint) return;
-    const text = (feedback || "").trim();
-    if (!text) {
+    if (!feedback.trim()) {
       alert("Please enter feedback");
       return;
     }
 
-    try {
-      const adminId = getAdminIdentifier();
-      const adminName = getAdminDisplayName();
-      const newFb = {
-        adminId,
-        admin: adminName,
-        adminRole: staffRole || "staff",
-        feedback: text,
-        date: new Date().toISOString(),
-        files: (feedbackFiles || []).map((f) => f?.name || String(f)),
-      };
+    const newFeedback = {
+      feedback,
+      admin: "Current Admin",
+      date: new Date().toISOString(),
+      files: feedbackFiles.map((f) => f.name),
+    };
 
-      const ref = doc(db, "complaints", selectedComplaint.id);
-      await updateDoc(ref, {
-        feedbackHistory: arrayUnion(newFb),
-        Feedback: text,
-        feedbackUpdatedAt: new Date().toISOString(),
-      });
+    const updated = complaints.map((c) =>
+      c.id === selectedComplaint.id
+        ? { ...c, feedbackHistory: [...(c.feedbackHistory || []), newFeedback] }
+        : c
+    );
 
-      setComplaints((prev) => prev.map((c) => (
-        c.id === selectedComplaint.id
-          ? { ...c, feedbackHistory: [...(c.feedbackHistory || []), newFb], Feedback: text }
-          : c
-      )));
-      setSelectedComplaint((prev) => prev ? { ...prev, feedbackHistory: [...(prev.feedbackHistory || []), newFb], Feedback: text } : prev);
-      setFeedback("");
-      setFeedbackFiles([]);
-      alert("Feedback sent");
-    } catch (e) {
-      console.error("Failed to send feedback:", e);
-      alert("Failed to send feedback. Please try again.");
-    }
+    setComplaints(updated);
+    setSelectedComplaint({
+      ...selectedComplaint,
+      feedbackHistory: [...(selectedComplaint.feedbackHistory || []), newFeedback],
+    });
+
+    setFeedback("");
+    setFeedbackFiles([]);
   };
 
   const handleFeedbackFileChange = (event) => {
@@ -356,7 +306,7 @@ const handleUpdateStatus = async (newStatus) => {
   try {
     // Update the status in Firestore
     const complaintRef = doc(db, "complaints", selectedComplaint.id);
-    await updateDoc(complaintRef, { status: newStatus, statusUpdatedAt: new Date().toISOString() });
+    await updateDoc(complaintRef, { status: newStatus });
 
     // Update the status in the UI (locally)
     const updatedComplaints = complaints.map((complaint) =>
@@ -538,11 +488,16 @@ const getStatusClass = (status) => {
 
   return (
     <div className="monitor-complaints-page">
-      <StaffSideBar />
-      <StaffNavBar />
+      <SideBar />
+      <AdminNavbar />
 
       <div className="main-content">
-       
+        <div className="page-header">
+          <div>
+            <h2>Monitor Student Complaints</h2>
+            <p>View and manage all student complaints</p>
+          </div>
+        </div>
 
         {/* Filters */}
         <div className="filters-section">
@@ -661,7 +616,7 @@ const getStatusClass = (status) => {
                     </p>
                   </div>
                   <button className="btn-close" onClick={closeModal}>
-                    <i className="fas fa-xmark"></i>
+                    X
                   </button>
                 </div>
 
@@ -698,7 +653,7 @@ const getStatusClass = (status) => {
                           {selectedComplaint.feedbackHistory.map((item, index) => (
                             <div className="feedback-item" key={`${item.date || index}-${index}`}>
                               <div className="feedback-header">
-                                <strong>Administrator</strong>
+                                <strong>{item.admin || "Admin"}</strong>
                                 <span className="feedback-date">
                                   {item.date ? formatDateTime(item.date) : "Just now"}
                                 </span>
@@ -735,14 +690,16 @@ const getStatusClass = (status) => {
                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                               onChange={handleFeedbackFileChange}
                             />
-                            Attach Files
+                            dY"Z Attach Files
                           </label>
                           {feedbackFiles.length > 0 && (
                             <div className="selected-files">
                               {feedbackFiles.map((file, index) => (
                                 <div className="file-chip" key={`${file.name || "file"}-${index}`}>
                                   <span>{file.name || "Attachment"}</span>
-                                  <button type="button" onClick={() => handleRemoveFeedbackFile(index)}><i class="fas fa-times"></i></button>
+                                  <button type="button" onClick={() => handleRemoveFeedbackFile(index)}>
+                                    A-
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -864,5 +821,3 @@ const getStatusClass = (status) => {
 };
 
 export default AdminMonitorComplaints;
-
-

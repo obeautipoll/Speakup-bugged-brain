@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/authContext";
 
 // LocalStorage key to track when student last viewed notifications
 const LS_LAST_SEEN_KEY = "student_notifications_last_seen";
+const LS_NOTIFS_PREFIX = "student_notifications_items_"; // per-user cache
 
 // Read last seen timestamp (ms since epoch) from localStorage
 const getLastSeen = () => {
@@ -45,6 +46,25 @@ const toMs = (val) => {
   return Number.isFinite(t) ? t : 0;
 };
 
+// Persist notifications per user (by uid or email)
+const getUserKey = (uid, email) => (uid ? `uid:${uid}` : email ? `email:${email}` : "guest");
+const loadNotifs = (key) => {
+  if (!key) return [];
+  try {
+    const raw = localStorage.getItem(`${LS_NOTIFS_PREFIX}${key}`);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+};
+const saveNotifs = (key, notifs) => {
+  if (!key) return;
+  try {
+    localStorage.setItem(`${LS_NOTIFS_PREFIX}${key}`, JSON.stringify(notifs || []));
+  } catch {}
+};
+
 /**
  * useStudentNotifications
  * Subscribes to the current user's complaints and emits notifications when
@@ -64,7 +84,6 @@ export function useStudentNotifications() {
 
   useEffect(() => {
     setLoading(true);
-    setNotifications([]);
     prevRef.current = new Map();
     initialLoadRef.current = true;
 
@@ -77,6 +96,13 @@ export function useStudentNotifications() {
     } catch {
       email = currentUser?.email || null;
     }
+
+    const userKey = getUserKey(uid, email);
+    // Rehydrate from cache so items don't disappear on remount
+    try {
+      const cached = loadNotifs(userKey);
+      if (cached.length) setNotifications(cached);
+    } catch {}
 
     let qUser = null;
     if (uid) {
@@ -141,15 +167,25 @@ export function useStudentNotifications() {
           });
 
           // Initialize notifications list with any backfilled items (sorted desc)
-          if (initialNotifs.length) {
-            initialNotifs.sort((a, b) => b.date - a.date);
-            setNotifications(initialNotifs.slice(0, 100));
-          }
-
-          initialLoadRef.current = false;
-          setLoading(false);
-          return;
+        if (initialNotifs.length) {
+          initialNotifs.sort((a, b) => b.date - a.date);
+          // Merge with any existing (cached) items and de-duplicate by id
+          setNotifications((prev) => {
+            const map = new Map();
+            [...initialNotifs, ...prev].forEach((n) => { if (n && n.id) map.set(n.id, n); });
+            const merged = Array.from(map.values()).sort((a, b) => b.date - a.date).slice(0, 200);
+            saveNotifs(userKey, merged);
+            return merged;
+          });
+        } else {
+          // No initial items; keep cached as-is
+          setNotifications((prev) => { saveNotifs(userKey, prev); return prev; });
         }
+
+        initialLoadRef.current = false;
+        setLoading(false);
+        return;
+      }
 
         // For subsequent updates, detect changes
         const newNotifs = [];
@@ -216,9 +252,11 @@ export function useStudentNotifications() {
 
         if (newNotifs.length) {
           setNotifications((prev) => {
-            const merged = [...newNotifs, ...prev];
-            // Optional: cap size to avoid growth
-            return merged.slice(0, 100);
+            const map = new Map();
+            [...newNotifs, ...prev].forEach((n) => { if (n && n.id) map.set(n.id, n); });
+            const merged = Array.from(map.values()).sort((a, b) => b.date - a.date).slice(0, 200);
+            saveNotifs(userKey, merged);
+            return merged;
           });
         }
       },

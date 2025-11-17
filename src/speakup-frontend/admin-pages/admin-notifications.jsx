@@ -95,7 +95,7 @@ const AdminNotifications = () => {
               className={`notification-item ${n.date > lastSeenAt ? "unread" : "read"}`}
               onClick={() => {
                 markSeenUpTo(n.date);
-                const focusTab = n.type === 'feedback' ? 'feedback' : 'details';
+                const focusTab = n.type === 'feedback' ? 'feedback' : (n.type === 'status' ? 'status' : 'details');
                 navigate('/amonitorcomplaints', { state: { complaintId: n.complaintId, focusTab } });
               }}
             >

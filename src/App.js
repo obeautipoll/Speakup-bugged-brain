@@ -1,5 +1,6 @@
 import { useRoutes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/authContext";
+import { NotificationsProvider } from "./contexts/notificationsContext";
 
 
 // Auth components
@@ -158,8 +159,10 @@ function App() {
 
   return (
     <AuthProvider>
-      <Header />
-      <div className="w-full h-screen flex flex-col">{routesElement}</div>
+      <NotificationsProvider>
+        <Header />
+        <div className="w-full h-screen flex flex-col">{routesElement}</div>
+      </NotificationsProvider>
     </AuthProvider>
   );
 }
